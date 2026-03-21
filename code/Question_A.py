@@ -5,3 +5,7 @@ import matplotlib.pyplot as plt
 
 Trips_by_Distance = pd.read_csv("Trips_by_Distance.csv")
 Trips_Full Data = pd.read_csv("Trips_Full Data.csv")
+
+# Convert date format
+trips_by_distance["Date"] = pd.to_datetime(trips_by_distance["Date"])
+trips_full_data["Date"] = pd.to_datetime(trips_full_data["Date"])
