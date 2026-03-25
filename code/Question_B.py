@@ -1,65 +1,66 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# load the main dataset
-trips_by_distance = pd.read_csv("Trips_by_Distance.csv")
+# load the dataset
+big_dataset = pd.read_csv("Trips_by_Distance.csv")
 
-# make sure Date is treated as a date column
-trips_by_distance["Date"] = pd.to_datetime(trips_by_distance["Date"])
+# convert Date into datetime format
+big_dataset["Date"] = pd.to_datetime(big_dataset["Date"])
 
-# only use national data
-national_only = trips_by_distance[trips_by_distance["Level"] == "National"].copy()
+# keep only national-level data
+national_only = big_dataset[big_dataset["Level"] == "National"].copy()
 
 # keep only the columns needed for this question
-national_only = national_only[["Date", "Number of Trips 10-25", "Number of Trips 50-100"]]
+national_only = national_only[["Number of Trips 10-25", "Number of Trips 50-100", "Date"]]
 
-# dates where 10-25 trips are above 10 million
-set_10_25 = national_only[national_only["Number of Trips 10-25"] > 10_000_000].copy()
+# create filtered sets based on the conditions in the question
+set1 = national_only[national_only["Number of Trips 10-25"] > 10000000]
+set2 = national_only[national_only["Number of Trips 50-100"] > 10000000]
+set3 = national_only[
+    (national_only["Number of Trips 10-25"] > 10000000) &
+    (national_only["Number of Trips 50-100"] > 10000000)
+]
+set4 = national_only[
+    (national_only["Number of Trips 10-25"] > 10000000) &
+    (national_only["Number of Trips 50-100"] < 10000000)
+]
 
-# dates where 50-100 trips are above 10 million
-set_50_100 = national_only[national_only["Number of Trips 50-100"] > 10_000_000].copy()
+# print number of rows in each set
+print("Number of rows in Set 1 (Number of Trips 10-25 > 10,000,000):", len(set1))
+print("Number of rows in Set 2 (Number of Trips 50-100 > 10,000,000):", len(set2))
+print("Number of rows in Set 3 (Both conditions met):", len(set3))
+print("Number of rows in Set 4 (10-25 > 10,000,000 and 50-100 < 10,000,000):", len(set4))
 
-# dates where both conditions happen at the same time
-both_sets = national_only[
-    (national_only["Number of Trips 10-25"] > 10_000_000) &
-    (national_only["Number of Trips 50-100"] > 10_000_000)
-].copy()
+# print matching dates
+print("\nSet 1 dates:")
+print(set1[["Date", "Number of Trips 10-25"]])
 
-# print the matching dates and values
-print("Dates where Number of Trips 10-25 > 10,000,000:")
-print(set_10_25[["Date", "Number of Trips 10-25"]])
+print("\nSet 2 dates:")
+print(set2[["Date", "Number of Trips 50-100"]])
 
-print("\nDates where Number of Trips 50-100 > 10,000,000:")
-print(set_50_100[["Date", "Number of Trips 50-100"]])
-
-print("\nSummary:")
-print(f"Number of dates where Number of Trips 10-25 > 10,000,000: {len(set_10_25)}")
-print(f"Number of dates where Number of Trips 50-100 > 10,000,000: {len(set_50_100)}")
-print(f"Number of dates where both conditions are true: {len(both_sets)}")
-
-# scatterplot to compare both trip ranges
+# scatterplot comparison
 plt.figure(figsize=(12, 6))
 
 plt.scatter(
-    set_10_25["Date"],
-    set_10_25["Number of Trips 10-25"],
-    label="10-25 trips (>10M)",
-    alpha=0.7
+    set1["Date"],
+    set1["Number of Trips 10-25"],
+    alpha=0.6,
+    label="Set 1: Trips 10-25 > 10M"
 )
 
 plt.scatter(
-    set_50_100["Date"],
-    set_50_100["Number of Trips 50-100"],
-    label="50-100 trips (>10M)",
-    alpha=0.7
+    set2["Date"],
+    set2["Number of Trips 50-100"],
+    alpha=0.6,
+    label="Set 2: Trips 50-100 > 10M"
 )
 
-# log scale helps because the two ranges are very different in size
+# log scale makes both sets easier to compare
 plt.yscale("log")
 
+plt.title("Comparison of Dates Where Trip Counts Exceed 10,000,000")
 plt.xlabel("Date")
 plt.ylabel("Number of Trips")
-plt.title("Comparison of Dates Where Trip Counts Exceed 10,000,000")
 plt.xticks(rotation=45, ha="right")
 plt.legend()
 plt.tight_layout()
