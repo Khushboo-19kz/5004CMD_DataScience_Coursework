@@ -268,3 +268,198 @@ plt.title("Average Travellers by Distance Band (Week 32)")
 plt.xticks(rotation=45)
 plt.tight_layout()
 plt.show()
+
+
+# =========================
+# QUESTION 5
+# PARALLEL SECTION ONLY
+# =========================
+
+import time
+import math
+import pandas as pd
+import matplotlib.pyplot as plt
+from multiprocessing import Pool 
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+
+# -------------------------
+# QA function
+# -------------------------
+def q1_task():
+    weekly_home = (
+        national_only.groupby("Week")["Population Staying at Home"]
+        .mean()
+        .sort_index()
+    )
+
+    avg_not_home = small_dataset["People Not Staying at Home"].mean()
+
+    mean_trips_by_distance = small_dataset[distance_cols].mean()
+    most_common_distance = mean_trips_by_distance.idxmax()
+
+    return {
+        "Question": "Q1",
+        "Weeks Analysed": len(weekly_home),
+        "Average Not Staying Home": round(avg_not_home, 2),
+        "Most Common Distance": most_common_distance
+    }
+
+# -------------------------
+# QB function
+# -------------------------
+def q2_task():
+    trips_10_25 = national_only[national_only["Number of Trips 10-25"] > 10_000_000]
+    trips_50_100 = national_only[national_only["Number of Trips 50-100"] > 10_000_000]
+
+    return {
+        "Question": "Q2",
+        "Dates 10-25 > 10M": len(trips_10_25),
+        "Dates 50-100 > 10M": len(trips_50_100)
+    }
+
+# -------------------------
+# QC function
+# -------------------------
+def q3_task():
+    records = []
+
+    for _, row in small_dataset.iterrows():
+        for col in distance_cols:
+            records.append({
+                "Distance_Miles": distance_midpoints[col],
+                "Trip_Frequency": row[col]
+            })
+
+    model_df = pd.DataFrame(records)
+
+    X = model_df[["Distance_Miles"]]
+    y = model_df["Trip_Frequency"]
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
+
+    model = LinearRegression()
+    model.fit(X_train, y_train)
+
+    y_pred = model.predict(X_test)
+
+    rmse = math.sqrt(mean_squared_error(y_test, y_pred))
+    r2 = r2_score(y_test, y_pred)
+
+    return {
+        "Question": "Q3",
+        "RMSE": round(rmse, 2),
+        "R2": round(r2, 4)
+    }
+
+# -------------------------
+# QD function
+# -------------------------
+def q4_task():
+    avg_distance = small_dataset[distance_cols].mean().sort_values(ascending=False)
+
+    return {
+        "Question": "Q4",
+        "Top Distance Band": avg_distance.index[0],
+        "Top Average Trips": round(avg_distance.iloc[0], 2)
+    }
+
+# -------------------------
+# Run one task
+# -------------------------
+def run_task(task_name):
+    if task_name == "Q1":
+        return q1_task()
+    elif task_name == "Q2":
+        return q2_task()
+    elif task_name == "Q3":
+        return q3_task()
+    elif task_name == "Q4":
+        return q4_task()
+
+# -------------------------
+# Sequential run
+# -------------------------
+def run_sequential():
+    tasks = ["Q1", "Q2", "Q3", "Q4"]
+    start_time = time.perf_counter()
+
+    results = []
+    for task in tasks:
+        results.append(run_task(task))
+
+    end_time = time.perf_counter()
+    return results, end_time - start_time
+
+# -------------------------
+# Parallel run using multiprocessing
+# -------------------------
+def run_parallel(num_workers):
+    tasks = ["Q1", "Q2", "Q3", "Q4"]
+    start_time = time.perf_counter()
+    with Pool(processes=num_workers) as pool:
+        results = pool.map(run_task, tasks)
+    end_time = time.perf_counter()
+    return results, end_time - start_time
+
+# -------------------------
+# Execute comparison
+# -------------------------
+if __name__ == "__main__":
+    seq_results, seq_time = run_sequential()
+    par10_results, par10_time = run_parallel(10)
+    par20_results, par20_time = run_parallel(20)
+
+print("Sequential Results:")
+for result in seq_results:
+    print(result)
+
+print("\nParallel Results (10 workers):")
+for result in par10_results:
+    print(result)
+
+print("\nParallel Results (20 workers):")
+for result in par20_results:
+    print(result)
+
+# -------------------------
+# Timing table
+# -------------------------
+timing_df = pd.DataFrame({
+    "Method": ["Sequential", "Parallel (10 workers)", "Parallel (20 workers)"],
+    "Execution Time (seconds)": [seq_time, par10_time, par20_time]
+})
+
+print("\nTiming Comparison:")
+print(timing_df)
+
+# -------------------------
+# Timing plot
+# -------------------------
+plt.figure(figsize=(10, 6))
+
+plt.bar(timing_df["Method"], timing_df["Execution Time (seconds)"])
+
+# ADD TEXT HERE (before plt.show())
+for i, v in enumerate(timing_df["Execution Time (seconds)"]):
+    plt.text(i, v + 0.002, f"{v:.3f}", ha='center')
+
+plt.xlabel("Method")
+plt.ylabel("Execution Time (seconds)")
+plt.title("Execution Time Comparison: Sequential vs Parallel Processing")
+plt.xticks(rotation=15)
+plt.tight_layout()
+
+plt.show()
+
+print("Sequential time:", seq_time)
+print("Parallel (10 workers):", par10_time)
+print("Parallel (20 workers):", par20_time)
+
+print("\nInterpretation:")
+print("Sequential execution was fastest for this workload.")
+print("Parallel execution was slower because the tasks were small and worker-management overhead dominated.")
+print("Using more workers than tasks did not improve efficiency.")
