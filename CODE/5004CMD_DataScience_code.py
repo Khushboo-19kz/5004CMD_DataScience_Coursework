@@ -127,3 +127,44 @@ plt.title("Average Trips by Distance Range")
 plt.xticks(rotation=45)
 plt.tight_layout()
 plt.show()
+
+# =========================
+# QUESTION B
+# =========================
+
+# Filter dates where trips exceed 10,000,000
+set_10_25 = national_only[national_only["Number of Trips 10-25"] > 10_000_000][
+    ["Date", "Number of Trips 10-25"]
+].copy()
+
+set_50_100 = national_only[national_only["Number of Trips 50-100"] > 10_000_000][
+    ["Date", "Number of Trips 50-100"]
+].copy()
+
+print("Dates where Number of Trips 10-25 > 10,000,000:")
+print(set_10_25)
+
+print("\nDates where Number of Trips 50-100 > 10,000,000:")
+print(set_50_100)
+
+print("\nCount of dates for 10-25 range:", len(set_10_25))
+print("Count of dates for 50-100 range:", len(set_50_100))
+
+# Merge on Date to compare shared dates
+comparison = pd.merge(set_10_25, set_50_100, on="Date", how="outer")
+
+print("\nComparison table:")
+print(comparison)
+
+# Scatterplot comparison
+plt.figure(figsize=(12, 6))
+plt.scatter(set_10_25["Date"], set_10_25["Number of Trips 10-25"], label="10-25 Trips", alpha=0.7)
+plt.scatter(set_50_100["Date"], set_50_100["Number of Trips 50-100"], label="50-100 Trips", alpha=0.7)
+
+plt.xlabel("Date")
+plt.ylabel("Number of Trips")
+plt.title("Comparison of Dates with More Than 10,000,000 Trips")
+plt.legend()
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
