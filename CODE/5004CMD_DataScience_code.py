@@ -168,3 +168,66 @@ plt.legend()
 plt.xticks(rotation=45)
 plt.tight_layout()
 plt.show()
+
+# =========================
+# QUESTION C
+# =========================
+
+# Convert the wide-format week dataset into long format
+# so that each row is one (distance, trip_count) pair
+records = []
+
+for _, row in small_dataset.iterrows():
+    for col in distance_cols:
+        records.append({
+            "Date": row["Date"],
+            "Distance_Miles": distance_midpoints[col],
+            "Trip_Frequency": row[col]
+        })
+
+model_df = pd.DataFrame(records)
+
+print("Model dataset:")
+print(model_df.head())
+
+# Features and target
+X = model_df[["Distance_Miles"]]
+y = model_df["Trip_Frequency"]
+
+# Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# Train a simple linear regression model
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+# Predictions
+y_pred = model.predict(X_test)
+
+# Evaluation metrics
+rmse = math.sqrt(mean_squared_error(y_test, y_pred))
+r2 = r2_score(y_test, y_pred)
+
+print("RMSE:", rmse)
+print("R^2:", r2)
+print("Intercept:", model.intercept_)
+print("Slope:", model.coef_[0])
+
+# Scatterplot with regression line
+plt.figure(figsize=(10, 6))
+plt.scatter(model_df["Distance_Miles"], model_df["Trip_Frequency"], alpha=0.7, label="Actual Data")
+
+# Create sorted values for a clean regression line
+x_line = np.linspace(model_df["Distance_Miles"].min(), model_df["Distance_Miles"].max(), 200)
+x_line_df = pd.DataFrame({"Distance_Miles": x_line})
+y_line = model.predict(x_line_df)
+
+plt.plot(x_line, y_line, linewidth=2, label="Linear Regression Line")
+plt.xlabel("Trip Length (Miles)")
+plt.ylabel("Trip Frequency")
+plt.title("Trip Frequency vs Trip Length")
+plt.legend()
+plt.tight_layout()
+plt.show()
