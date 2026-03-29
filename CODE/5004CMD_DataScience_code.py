@@ -30,3 +30,30 @@ national_only = big_dataset[big_dataset["Level"] == "National"].copy()
 cols_to_drop = ["State FIPS", "State Postal Code", "County FIPS", "County Name"]
 national_only = national_only.drop(columns=cols_to_drop, errors="ignore")
 
+# Distance columns from the week-level dataset
+distance_cols = [
+    "Trips <1 Mile",
+    "Trips 1-3 Miles",
+    "Trips 3-5 Miles",
+    "Trips 5-10 Miles",
+    "Trips 10-25 Miles",
+    "Trips 25-50 Miles",
+    "Trips 50-100 Miles",
+    "Trips 100-250 Miles",
+    "Trips 250-500 Miles",
+    "Trips 500+ Miles"
+]
+
+# Distance midpoints for modelling
+distance_midpoints = {
+    "Trips <1 Mile": 0.5,
+    "Trips 1-3 Miles": 2,
+    "Trips 3-5 Miles": 4,
+    "Trips 5-10 Miles": 7.5,
+    "Trips 10-25 Miles": 17.5,
+    "Trips 25-50 Miles": 37.5,
+    "Trips 50-100 Miles": 75,
+    "Trips 100-250 Miles": 175,
+    "Trips 250-500 Miles": 375,
+    "Trips 500+ Miles": 500
+}
