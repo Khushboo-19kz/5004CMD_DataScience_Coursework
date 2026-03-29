@@ -231,3 +231,40 @@ plt.title("Trip Frequency vs Trip Length")
 plt.legend()
 plt.tight_layout()
 plt.show()
+
+# =========================
+# QUESTION D
+# =========================
+
+# Create a cleaner table for plotting
+plot_df = small_dataset[["Date"] + distance_cols].copy()
+plot_df["Date"] = plot_df["Date"].dt.strftime("%Y-%m-%d")
+
+print("Week 32 distance-travel table:")
+print(plot_df)
+
+# Plot each distance band across the 7 days
+plt.figure(figsize=(14, 8))
+
+for col in distance_cols:
+    plt.plot(plot_df["Date"], plot_df[col], marker="o", label=col)
+
+plt.xlabel("Date")
+plt.ylabel("Number of Travellers / Trips")
+plt.title("Travellers by Distance Band Across Week 32")
+plt.xticks(rotation=45)
+plt.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
+plt.tight_layout()
+plt.show()
+
+# show average values for a simpler comparison
+avg_distance = small_dataset[distance_cols].mean().sort_values(ascending=False)
+
+plt.figure(figsize=(12, 6))
+plt.bar(avg_distance.index, avg_distance.values)
+plt.xlabel("Distance Range")
+plt.ylabel("Average Number of Travellers / Trips")
+plt.title("Average Travellers by Distance Band (Week 32)")
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
